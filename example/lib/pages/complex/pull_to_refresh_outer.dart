@@ -293,44 +293,40 @@ class _FoodListViewState extends State<FoodListView> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       children: [
-        Row(
-          children: [
-            ValueListenableBuilder<int>(
-                valueListenable: _currentIndex,
-                builder: (BuildContext context, int value, Widget? child) {
-                  return GestureDetector(
-                    onVerticalDragUpdate: (_) {},
-                    child: SizedBox(
-                      width: 80,
-                      height: 10000,
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.all(0.0),
-                        // physics: const NeverScrollableScrollPhysics(),
-                        itemBuilder: (BuildContext c, int i) {
-                          return GestureDetector(
-                            onTap: () {
-                              updateSelectIndex(i);
-                              // _itemScrollController.jumpTo(index: i);
-                            },
-                            child: Container(
-                              alignment: Alignment.center,
-                              color: i == value ? Colors.grey : Colors.white,
-                              height: leftItemHeight,
-                              child: Text(_groups[i].groupTitle),
-                            ),
-                          );
+        ValueListenableBuilder<int>(
+            valueListenable: _currentIndex,
+            builder: (BuildContext context, int value, Widget? child) {
+              return GestureDetector(
+                onVerticalDragUpdate: (_) {},
+                child: SizedBox(
+                  width: 80,
+                  height: 10000,
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(0.0),
+                    // physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (BuildContext c, int i) {
+                      return GestureDetector(
+                        onTap: () {
+                          updateSelectIndex(i);
+                          // _itemScrollController.jumpTo(index: i);
                         },
-                        itemCount: _groups.length,
-                      ),
-                    ),
-                  );
-                }),
-            Expanded(child: _list(Orientation.portrait)),
-          ],
-        ),
+                        child: Container(
+                          alignment: Alignment.center,
+                          color: i == value ? Colors.grey : Colors.white,
+                          height: leftItemHeight,
+                          child: Text(_groups[i].groupTitle),
+                        ),
+                      );
+                    },
+                    itemCount: _groups.length,
+                  ),
+                ),
+              );
+            }),
+        Expanded(child: _list(Orientation.portrait)),
       ],
     );
   }
