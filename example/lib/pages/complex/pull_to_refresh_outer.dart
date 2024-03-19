@@ -154,6 +154,7 @@ const leftItemWidth = 80.0;
 const rightItemHeight = 80.0;
 const rightGroupHeadHeight = 40;
 const groupNum = 100;
+const pageViewH = 150.0;
 
 class FoodListView extends StatefulWidget {
   @override
@@ -178,24 +179,35 @@ class _FoodListViewState extends State<FoodListView> {
   final ItemPositionsListener _itemPositionsListener =
       ItemPositionsListener.create();
 
-  Widget _list(Orientation orientation) => ScrollablePositionedList.builder(
-        itemCount: _groups.length,
-        itemBuilder: (context, index) => _item(index, orientation),
-        itemScrollController: _itemScrollController,
-        itemPositionsListener: _itemPositionsListener,
-        scrollOffsetController: _scrollOffsetController,
-        physics: const ClampingScrollPhysics(),
-        shrinkWrap: true,
-        reverse: false,
-        scrollDirection: orientation == Orientation.portrait
-            ? Axis.vertical
-            : Axis.horizontal,
+  Widget _list(Orientation orientation) => NotificationListener(
+        onNotification: (notification) {
+          if (notification is ScrollMetricsNotification &&
+              notification.metrics is FixedScrollMetrics) {
+            FixedScrollMetrics metrics =
+                notification.metrics as FixedScrollMetrics;
+            _mainOffset.value = min(metrics.extentBefore, pageViewH);
+          }
+          return false;
+        },
+        child: ScrollablePositionedList.builder(
+          itemCount: _groups.length,
+          itemBuilder: (context, index) => _item(index, orientation),
+          itemScrollController: _itemScrollController,
+          itemPositionsListener: _itemPositionsListener,
+          scrollOffsetController: _scrollOffsetController,
+          physics: const ClampingScrollPhysics(),
+          shrinkWrap: true,
+          reverse: false,
+          scrollDirection: orientation == Orientation.portrait
+              ? Axis.vertical
+              : Axis.horizontal,
+        ),
       );
 
   /// Generate item number [i].
   Widget _item(int i, Orientation orientation) {
     double height = _groups[i].foods.length * rightItemHeight;
-    double width = MediaQuery.of(context).size.width - leftItemWidth;
+    double width = MediaQuery.of(context).size.width;
     Widget child = Column(
         mainAxisSize: MainAxisSize.min,
         children: _groups[i]
@@ -229,9 +241,10 @@ class _FoodListViewState extends State<FoodListView> {
           height -
           rightGroupHeadHeight;
       double totalH = blankH > 0 ? height + blankH : height;
-      content = SizedBox(
+      content = Container(
         width: width,
         height: totalH,
+        margin: EdgeInsets.only(left: leftItemWidth),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -241,10 +254,26 @@ class _FoodListViewState extends State<FoodListView> {
         ),
       );
     } else {
-      content = SizedBox(
+      content = Container(
         height: height,
         width: width,
         child: child,
+        margin: EdgeInsets.only(left: leftItemWidth),
+      );
+    }
+    if (_groups[i].groupTitle.isEmpty) {
+      double screenW = MediaQuery.of(context).size.width;
+      double imageW = screenW - 30;
+      return Container(
+        width: screenW,
+        height: pageViewH,
+        padding: EdgeInsets.all(15),
+        child: Image.network(
+          'https://static.xiaoyacity.com/banner/food_banner_5.jpeg',
+          width: imageW,
+          height: 120,
+          fit: BoxFit.cover,
+        ),
       );
     }
     return StickyHeader(
@@ -252,6 +281,7 @@ class _FoodListViewState extends State<FoodListView> {
           height: leftItemHeight,
           color: Colors.blueGrey[700],
           padding: EdgeInsets.symmetric(horizontal: 16.0),
+          margin: EdgeInsets.only(left: leftItemWidth),
           alignment: Alignment.centerLeft,
           child: Text(
             _groups[i].groupTitle,
@@ -288,48 +318,71 @@ class _FoodListViewState extends State<FoodListView> {
       }
     }
     _groups = groups.map((e) => FoodGroup.fromJson(e)).toList();
+    _groups.insert(0, FoodGroup());
     _itemPositionsListener.itemPositions.addListener(_updatePositions);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Stack(
       children: [
-        ValueListenableBuilder<int>(
-            valueListenable: _currentIndex,
-            builder: (BuildContext context, int value, Widget? child) {
-              return GestureDetector(
-                onVerticalDragUpdate: (_) {},
-                child: SizedBox(
-                  width: 80,
-                  height: 10000,
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(0.0),
-                    // physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (BuildContext c, int i) {
-                      return GestureDetector(
-                        onTap: () {
-                          updateSelectIndex(i);
-                          // _itemScrollController.jumpTo(index: i);
+        Positioned.fill(child: _list(Orientation.portrait)),
+        ValueListenableBuilder(
+            valueListenable: _mainOffset,
+            builder: (BuildContext context, double value, Widget? child) {
+              return Positioned(
+                left: 0,
+                top: pageViewH - value,
+                width: 80,
+                bottom: 0,
+                child: ValueListenableBuilder<int>(
+                    valueListenable: _currentIndex,
+                    builder: (BuildContext context, int value, Widget? child) {
+                      return NotificationListener(
+                        onNotification: (_) {
+                          return true;
                         },
                         child: Container(
-                          alignment: Alignment.center,
-                          color: i == value ? Colors.grey : Colors.white,
-                          height: leftItemHeight,
-                          child: Text(_groups[i].groupTitle),
+                          color: Colors.white,
+                          child: ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.all(0.0),
+                            physics: const ClampingScrollPhysics(),
+                            itemBuilder: (BuildContext c, int i) {
+                              FoodGroup firstGroup = _groups[0];
+                              FoodGroup foodGroup = _groups[i];
+                              Color color = Colors.white;
+                              if (i == value ||
+                                  (firstGroup.groupTitle.isEmpty && i == 1)) {
+                                color = Colors.grey;
+                              }
+                              if (foodGroup.groupTitle.isEmpty) {
+                                return Container();
+                              }
+                              return GestureDetector(
+                                onTap: () {
+                                  updateSelectIndex(i);
+                                },
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  color: color,
+                                  height: leftItemHeight,
+                                  child: Text(foodGroup.groupTitle),
+                                ),
+                              );
+                            },
+                            itemCount: _groups.length,
+                          ),
                         ),
                       );
-                    },
-                    itemCount: _groups.length,
-                  ),
-                ),
+                    }),
               );
             }),
-        Expanded(child: _list(Orientation.portrait)),
       ],
     );
   }
+
+  ValueNotifier<double> _mainOffset = ValueNotifier<double>(0);
 
   void _updatePositions() {
     if (_clickIndex == true) {
@@ -344,7 +397,8 @@ class _FoodListViewState extends State<FoodListView> {
               position.itemTrailingEdge < min.itemTrailingEdge ? position : min)
           .index;
       if (min != _currentIndex.value) {
-        double scrollExtent = min * leftItemHeight;
+        double scrollExtent =
+            (_groups.first.groupTitle.isEmpty ? min - 1 : min) * leftItemHeight;
         double maxScrollExtent =
             _scrollController.position.maxScrollExtent.toDouble();
         double extent =
@@ -353,7 +407,6 @@ class _FoodListViewState extends State<FoodListView> {
             duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
         _currentIndex.value = min;
       }
-      print('curIndex == $min');
     }
   }
 
@@ -370,7 +423,7 @@ class FoodGroup {
   String groupTitle;
   List<FoodModel> foods;
 
-  FoodGroup({required this.groupTitle, required this.foods}) {}
+  FoodGroup({this.groupTitle = '', this.foods = const []});
 
   factory FoodGroup.fromJson(Map json) {
     return FoodGroup(

@@ -316,7 +316,6 @@ class _PositionedListState extends State<PositionedList> {
   /// FIXME
   void _schedulePositionNotificationUpdate() {
     if (!updateScheduled) {
-      print('--------');
       updateScheduled = true;
       SchedulerBinding.instance.addPostFrameCallback((_) {
         final elements = registeredElements.value;
