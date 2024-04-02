@@ -143,7 +143,7 @@ class _PositionedListState extends State<PositionedList> {
   late final ScrollController scrollController;
 
   bool updateScheduled = false;
-  late ScrollPosition _position;
+  ScrollPosition? _position;
 
   @override
   void initState() {
@@ -151,11 +151,11 @@ class _PositionedListState extends State<PositionedList> {
     scrollController = widget.controller ?? ScrollController();
 
     /// FIXME
-    if (scrollController.positions.length >= 1) {
-      _position = scrollController.positions.last;
-    } else {
-      _position = scrollController.position;
-    }
+    Future.microtask(() {
+      if (scrollController.positions.length >= 1) {
+        _position = scrollController.positions.last;
+      }
+    });
     scrollController.addListener(_schedulePositionNotificationUpdate);
     _schedulePositionNotificationUpdate();
   }
@@ -315,7 +315,7 @@ class _PositionedListState extends State<PositionedList> {
 
   /// FIXME
   void _schedulePositionNotificationUpdate() {
-    if (!updateScheduled) {
+    if (!updateScheduled && _position != null) {
       updateScheduled = true;
       SchedulerBinding.instance.addPostFrameCallback((_) {
         final elements = registeredElements.value;
@@ -348,9 +348,9 @@ class _PositionedListState extends State<PositionedList> {
             positions.add(ItemPosition(
                 index: key.value,
                 itemLeadingEdge:
-                    itemOffset.round() / _position.viewportDimension,
+                    itemOffset.round() / _position!.viewportDimension,
                 itemTrailingEdge: (itemOffset + box.size.height).round() /
-                    _position.viewportDimension));
+                    _position!.viewportDimension));
           } else {
             final itemOffset =
                 box.localToGlobal(Offset.zero, ancestor: viewport).dx;
@@ -358,16 +358,16 @@ class _PositionedListState extends State<PositionedList> {
             positions.add(ItemPosition(
                 index: key.value,
                 itemLeadingEdge: (widget.reverse
-                            ? _position.viewportDimension -
+                            ? _position!.viewportDimension -
                                 (itemOffset + box.size.width)
                             : itemOffset)
                         .round() /
-                    _position.viewportDimension,
+                    _position!.viewportDimension,
                 itemTrailingEdge: (widget.reverse
-                            ? _position.viewportDimension - itemOffset
+                            ? _position!.viewportDimension - itemOffset
                             : (itemOffset + box.size.width))
                         .round() /
-                    _position.viewportDimension));
+                    _position!.viewportDimension));
           }
         }
         widget.itemPositionsNotifier?.itemPositions.value = positions;
