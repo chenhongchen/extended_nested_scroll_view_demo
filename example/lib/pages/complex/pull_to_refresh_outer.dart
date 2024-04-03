@@ -116,9 +116,9 @@ class _PullToRefreshOuterDemoState extends State<PullToRefreshOuterDemo>
                 child: TabBarView(
                   controller: _primaryTC,
                   children: <Widget>[
+                    FoodListView(),
                     _buildListView(1, _length1),
                     _buildListView(2, _length2),
-                    FoodListView(),
                   ],
                 ),
               )
@@ -153,7 +153,7 @@ const leftItemHeight = 40.0;
 const leftItemWidth = 80.0;
 const rightItemHeight = 80.0;
 const rightGroupHeadHeight = 40;
-const groupNum = 100;
+const groupNum = 10;
 const pageViewH = 150.0;
 
 class FoodListView extends StatefulWidget {
@@ -353,7 +353,9 @@ class _FoodListViewState extends State<FoodListView> {
                               FoodGroup foodGroup = _groups[i];
                               Color color = Colors.white;
                               if (i == value ||
-                                  (firstGroup.groupTitle.isEmpty && i == 1)) {
+                                  (firstGroup.groupTitle.isEmpty &&
+                                      value == 0 &&
+                                      i == 1)) {
                                 color = Colors.grey;
                               }
                               if (foodGroup.groupTitle.isEmpty) {
@@ -405,6 +407,9 @@ class _FoodListViewState extends State<FoodListView> {
             scrollExtent > maxScrollExtent ? maxScrollExtent : scrollExtent;
         _scrollController.animateTo(extent,
             duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+        if (min == 0 && _itemScrollController.target != 0) {
+          _itemScrollController.jumpTo(index: 0);
+        }
         _currentIndex.value = min;
       }
     }

@@ -260,6 +260,9 @@ class ItemScrollController {
     );
   }
 
+  /// FIXME 加
+  int get target => _scrollableListState?.primary.target ?? 0;
+
   void _attach(_ScrollablePositionedListState scrollableListState) {
     assert(_scrollableListState == null);
     _scrollableListState = scrollableListState;
