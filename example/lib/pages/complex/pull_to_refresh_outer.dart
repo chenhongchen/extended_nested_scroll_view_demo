@@ -154,7 +154,7 @@ const leftItemWidth = 80.0;
 const rightItemHeight = 80.0;
 const rightGroupHeadHeight = 40;
 const groupNum = 10;
-const pageViewH = 150.0;
+const pageViewH = 115.0;
 
 class FoodListView extends StatefulWidget {
   @override
@@ -342,38 +342,41 @@ class _FoodListViewState extends State<FoodListView> {
                         onNotification: (_) {
                           return true;
                         },
-                        child: Container(
-                          color: Colors.white,
-                          child: ListView.builder(
-                            controller: _scrollController,
-                            padding: const EdgeInsets.all(0.0),
-                            physics: const ClampingScrollPhysics(),
-                            itemBuilder: (BuildContext c, int i) {
-                              FoodGroup firstGroup = _groups[0];
-                              FoodGroup foodGroup = _groups[i];
-                              Color color = Colors.white;
-                              if (i == value ||
-                                  (firstGroup.groupTitle.isEmpty &&
-                                      value == 0 &&
-                                      i == 1)) {
-                                color = Colors.grey;
-                              }
-                              if (foodGroup.groupTitle.isEmpty) {
-                                return Container();
-                              }
-                              return GestureDetector(
-                                onTap: () {
-                                  updateSelectIndex(i);
-                                },
-                                child: Container(
-                                  alignment: Alignment.center,
-                                  color: color,
-                                  height: leftItemHeight,
-                                  child: Text(foodGroup.groupTitle),
-                                ),
-                              );
-                            },
-                            itemCount: _groups.length,
+                        child: GestureDetector(
+                          onVerticalDragUpdate: (_) {},
+                          child: Container(
+                            color: Colors.white,
+                            child: ListView.builder(
+                              controller: _scrollController,
+                              padding: const EdgeInsets.all(0.0),
+                              physics: const ClampingScrollPhysics(),
+                              itemBuilder: (BuildContext c, int i) {
+                                FoodGroup firstGroup = _groups[0];
+                                FoodGroup foodGroup = _groups[i];
+                                Color color = Colors.white;
+                                if (i == value ||
+                                    (firstGroup.groupTitle.isEmpty &&
+                                        value == 0 &&
+                                        i == 1)) {
+                                  color = Colors.grey;
+                                }
+                                if (foodGroup.groupTitle.isEmpty) {
+                                  return Container();
+                                }
+                                return GestureDetector(
+                                  onTap: () {
+                                    updateSelectIndex(i);
+                                  },
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    color: color,
+                                    height: leftItemHeight,
+                                    child: Text(foodGroup.groupTitle),
+                                  ),
+                                );
+                              },
+                              itemCount: _groups.length,
+                            ),
                           ),
                         ),
                       );

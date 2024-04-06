@@ -57,6 +57,9 @@ class ScrollablePositionedList extends StatefulWidget {
     this.addAutomaticKeepAlives = true,
     this.addRepaintBoundaries = true,
     this.minCacheExtent,
+    this.inheritedController = false,
+
+    /// FIXME
   })  : assert(itemCount != null),
         assert(itemBuilder != null),
         itemPositionsNotifier = itemPositionsListener as ItemPositionsNotifier?,
@@ -87,6 +90,9 @@ class ScrollablePositionedList extends StatefulWidget {
     this.addAutomaticKeepAlives = true,
     this.addRepaintBoundaries = true,
     this.minCacheExtent,
+
+    /// FIXME
+    this.inheritedController = false,
   })  : assert(itemCount != null),
         assert(itemBuilder != null),
         assert(separatorBuilder != null),
@@ -185,6 +191,9 @@ class ScrollablePositionedList extends StatefulWidget {
   /// in builds of widgets that would otherwise already be built in the
   /// cache extent.
   final double? minCacheExtent;
+
+  /// FIXME 加
+  final bool inheritedController;
 
   @override
   State<StatefulWidget> createState() => _ScrollablePositionedListState();
@@ -312,8 +321,11 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
     with TickerProviderStateMixin {
   /// Details for the primary (active) [ListView].
   /// FIXME
-  late var primary =
-      _ListDisplayDetails(const ValueKey('Ping'), context: context);
+  late var primary = _ListDisplayDetails(
+    const ValueKey('Ping'),
+    context: context,
+    inheritedController: widget.inheritedController,
+  );
 
   /// Details for the secondary (transitional) [ListView] that is temporarily
   /// shown when scrolling a long distance.
@@ -666,18 +678,13 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
 
 class _ListDisplayDetails {
   /// FIXME
-  _ListDisplayDetails(this.key, {BuildContext? context}) {
-    if (context != null) {
-      ScrollController? controller = PrimaryScrollController.maybeOf(context);
-      if (controller == null) {
-        scrollController = ScrollController(keepScrollOffset: false);
-      } else {
-        scrollController = controller;
-      }
-    } else {
-      scrollController = ScrollController(keepScrollOffset: false);
-    }
-  }
+  _ListDisplayDetails(
+    this.key, {
+    BuildContext? context,
+    bool inheritedController = false,
+  }) : scrollController = inheritedController && context != null
+            ? PrimaryScrollController.maybeOf(context)
+            : ScrollController(keepScrollOffset: false);
 
   final itemPositionsNotifier = ItemPositionsNotifier();
 
