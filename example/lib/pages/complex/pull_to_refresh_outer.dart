@@ -119,7 +119,7 @@ class _PullToRefreshOuterDemoState extends State<PullToRefreshOuterDemo>
                   children: <Widget>[
                     FoodListView(),
                     _buildListView(1, _length1),
-                    _buildListView(2, _length2),
+                    DemoList(),
                   ],
                 ),
               )
@@ -456,4 +456,40 @@ class FoodModel {
   factory FoodModel.fromJson(Map json) {
     return FoodModel(foodName: json['foodName']);
   }
+}
+
+class DemoList extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return _DemoListState();
+  }
+}
+
+class _DemoListState extends State<DemoList>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    int index = 2;
+    int length = 150;
+    return ListView.builder(
+      //store Page state
+      key: PageStorageKey<String>('Tab$index'),
+      physics: const ClampingScrollPhysics(),
+      itemBuilder: (BuildContext c, int i) {
+        return Container(
+          alignment: Alignment.center,
+          height: 60.0,
+          child: Text(
+            Key('Tab$index').toString() + ': ListView$i of $length',
+          ),
+        );
+      },
+      itemCount: length,
+      padding: const EdgeInsets.all(0.0),
+    );
+  }
+
+  @override
+  bool get wantKeepAlive => false;
 }
