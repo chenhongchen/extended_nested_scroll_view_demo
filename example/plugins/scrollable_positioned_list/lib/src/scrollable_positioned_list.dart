@@ -358,7 +358,8 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
       secondary.itemPositionsNotifier.itemPositions
           .addListener(_updatePositions);
       primary.scrollController.addListener(() {
-        final currentOffset = primary.scrollController.offset;
+        /// FIXME final currentOffset = primary.scrollController.offset;
+        final currentOffset = primary.scrollController.positions.last.pixels;
         final offsetChange = currentOffset - previousOffset;
         previousOffset = currentOffset;
         if (!_isTransitioning |
@@ -683,13 +684,14 @@ class _ListDisplayDetails {
     BuildContext? context,
     bool inheritedController = false,
   }) : scrollController = inheritedController && context != null
-            ? PrimaryScrollController.maybeOf(context)
+            ? PrimaryScrollController.maybeOf(context) ??
+                ScrollController(keepScrollOffset: false)
             : ScrollController(keepScrollOffset: false);
 
   final itemPositionsNotifier = ItemPositionsNotifier();
 
   /// FIXME
-  late final scrollController;
+  late final ScrollController scrollController;
 
   /// The index of the item to scroll to.
   int target = 0;

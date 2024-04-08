@@ -69,6 +69,7 @@ class _PullToRefreshOuterDemoState extends State<PullToRefreshOuterDemo>
       maxDragOffset: maxDragOffset,
       child: GlowNotificationWidget(
         ExtendedNestedScrollView(
+          onlyOneScrollInBody: true,
           headerSliverBuilder: (BuildContext c, bool f) {
             return <Widget>[
               const SliverAppBar(
@@ -163,7 +164,8 @@ class FoodListView extends StatefulWidget {
   }
 }
 
-class _FoodListViewState extends State<FoodListView> {
+class _FoodListViewState extends State<FoodListView>
+    with AutomaticKeepAliveClientMixin {
   ScrollController _scrollController = ScrollController();
   ValueNotifier<int> _currentIndex = ValueNotifier<int>(0);
 
@@ -201,6 +203,7 @@ class _FoodListViewState extends State<FoodListView> {
           scrollDirection: orientation == Orientation.portrait
               ? Axis.vertical
               : Axis.horizontal,
+          inheritedController: true,
         ),
       );
 
@@ -324,6 +327,7 @@ class _FoodListViewState extends State<FoodListView> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Stack(
       children: [
         Positioned.fill(child: _list(Orientation.portrait)),
@@ -425,6 +429,9 @@ class _FoodListViewState extends State<FoodListView> {
     _currentIndex.value = index;
     _clickIndex = true;
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class FoodGroup {
